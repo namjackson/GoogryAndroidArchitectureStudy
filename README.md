@@ -1,5 +1,19 @@
 # GoogryAndroidArchitectureStudy
 
+## 나의 스터디 소개
+- Android Architecture Pattern ( MVP, MVVM ) 에 대한 학습, 
+- CoinHelperApp 구현을 통한 실습 
+- 팀원간의 코드리뷰, 
+- Coroutine, clean architecture 등의 실습진행
+
+아래 순서대로 변환 실습진행
+1. [BaseCode(MVC)](https://github.com/namjackson/GoogryAndroidArchitectureStudy/tree/BaseCode/namjackson)
+2. [MVP](https://github.com/namjackson/GoogryAndroidArchitectureStudy/tree/MVP/namjackson)
+3. [MVVM - Delegation](https://github.com/namjackson/GoogryAndroidArchitectureStudy/tree/MVVM-Delegates/namjackson)
+4. [MVVM](https://github.com/namjackson/GoogryAndroidArchitectureStudy/tree/MVVM/namjackson)
+5. [Koin](https://github.com/namjackson/GoogryAndroidArchitectureStudy/tree/class01/namjackson/namjackson)
+6. [Coroutine](https://github.com/namjackson/GoogryAndroidArchitectureStudy/tree/Coroutine/namjackson)
+
 ## 스터디장
 - 정석준 [sjjeong](https://github.com/sjjeong)
 [공간](https://github.com/StudyFork/GoogryAndroidArchitectureStudy/tree/master/sjjeong)
