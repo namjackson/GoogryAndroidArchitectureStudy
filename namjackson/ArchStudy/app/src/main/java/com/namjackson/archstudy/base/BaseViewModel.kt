@@ -3,6 +3,7 @@ package com.namjackson.archstudy.base
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+
 import com.namjackson.archstudy.util.Event
 
 abstract class BaseViewModel : ViewModel() {

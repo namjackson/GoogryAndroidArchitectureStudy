@@ -1,13 +1,14 @@
 package com.namjackson.archstudy.view.coinlist
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
+import android.util.Log
+import androidx.lifecycle.*
 import com.namjackson.archstudy.base.BaseViewModel
 import com.namjackson.archstudy.data.model.Ticker
+import com.namjackson.archstudy.data.source.Result
 import com.namjackson.archstudy.data.source.TickerRepository
 import com.namjackson.archstudy.util.Event
+import kotlinx.coroutines.launch
+
 
 class CoinListViewModel(
     val tickerRepository: TickerRepository
@@ -35,7 +36,11 @@ class CoinListViewModel(
             _filterCoinList.value = filteringCoinList()
         })
         _filterCoinList.addSource(baseCurrency, Observer {
-            initMarket()
+            baseCurrency.value?.let {
+                if (it.isNotEmpty()) {
+                    initMarket()
+                }
+            }
         })
     }
 
@@ -50,31 +55,31 @@ class CoinListViewModel(
 
     fun initMarket() {
         _isLoading.postValue(true)
-        tickerRepository.getMarketAll(
-            baseCurrency = baseCurrency.value ?: "",
-            success = {
-                markets = it
+
+        viewModelScope.launch {
+            val resultMarket = tickerRepository.getMarketAll(baseCurrency.value ?: "")
+            if (resultMarket is Result.Success) {
+                markets = resultMarket.data
                 getTickers(markets)
-            },
-            fail = {
-                _showToastEvent.value = Event(it)
+            } else {
+                _showToastEvent.value = Event(resultMarket.toString())
                 _isLoading.value = false
             }
-        )
+        }
+
     }
 
     fun getTickers(markets: String) {
-        tickerRepository.getTickers(
-            markets = markets,
-            success = {
-                coinList.value = it
-                _isLoading.value = false
-            },
-            fail = {
-                _showToastEvent.value = Event(it)
-                _isLoading.value = false
+        viewModelScope.launch {
+            val resultList = tickerRepository.getTickers(markets)
+            if (resultList is Result.Success) {
+                coinList.value = resultList.data
+            } else {
+                _showToastEvent.value = Event(resultList.toString())
             }
-        )
+            _isLoading.value = false
+        }
+
     }
 
     fun changeSearch(searchStr: CharSequence) {

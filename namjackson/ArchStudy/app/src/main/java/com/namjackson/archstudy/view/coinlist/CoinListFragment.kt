@@ -44,7 +44,7 @@ class CoinListFragment
             override fun run() {
                 viewModel.loadCoinList()
             }
-        }, 0, (10 * SECOND))
+        }, (10 * SECOND), (10 * SECOND))
     }
 
     override fun onPause() {

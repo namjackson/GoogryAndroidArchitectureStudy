@@ -3,26 +3,30 @@ package com.namjackson.archstudy.data.source
 import com.namjackson.archstudy.data.model.Ticker
 import com.namjackson.archstudy.data.source.local.TickerLocalDataSource
 import com.namjackson.archstudy.data.source.remote.TickerRemoteDataSource
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class TickerRepository private constructor(
     val tickerLocalDataSource: TickerLocalDataSource,
     val tickerRemoteDataSource: TickerRemoteDataSource
 ) {
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 
-    fun getMarketAll(
-        baseCurrency: String,
-        success: (markets: String) -> Unit,
-        fail: (msg: String) -> Unit
-    ) {
-        tickerRemoteDataSource.getMarketAll(baseCurrency, success, fail)
+    suspend fun getMarketAll(
+        baseCurrency: String
+    ): Result<String> {
+        return withContext(ioDispatcher) {
+            return@withContext tickerRemoteDataSource.getMarketAll(baseCurrency)
+        }
     }
 
-    fun getTickers(
-        markets: String,
-        success: (coinList: List<Ticker>) -> Unit,
-        fail: (msg: String) -> Unit
-    ) {
-        tickerRemoteDataSource.getTickers(markets, success, fail)
+    suspend fun getTickers(
+        markets: String
+    ): Result<List<Ticker>> {
+        return withContext(ioDispatcher) {
+            return@withContext tickerRemoteDataSource.getTickers(markets)
+        }
     }
 
     companion object {

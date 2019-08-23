@@ -1,19 +1,16 @@
 package com.namjackson.archstudy.data.source.remote
 
 import com.namjackson.archstudy.data.model.Ticker
+import com.namjackson.archstudy.data.source.Result
 
 interface TickerRemoteDataSource {
 
-    fun getMarketAll(
-        baseCurrency: String,
-        success: (markets: String) -> Unit,
-        fail: (msg: String) -> Unit
-    )
+    suspend fun getMarketAll(
+        baseCurrency: String
+    ): Result<String>
 
-    fun getTickers(
-        markets: String,
-        success: (tickers: List<Ticker>) -> Unit,
-        fail: (msg: String) -> Unit
-    )
+    suspend fun getTickers(
+        markets: String
+    ): Result<List<Ticker>>
 
 }
