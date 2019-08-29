@@ -70,7 +70,10 @@ class CoinListViewModel(
         viewModelScope.launch {
             channel = tickerRepository.getTickers(markets)
             channel.consumeAsFlow()
-                .catch { e -> showError(e.toString()) }
+                .catch { e ->
+                    if (!channel.isClosedForReceive)
+                        showError(e.toString())
+                }
                 .collect {
                     resultLoad(it) {
                         _isLoading.value = false
