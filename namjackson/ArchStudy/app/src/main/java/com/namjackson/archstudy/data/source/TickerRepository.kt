@@ -3,9 +3,11 @@ package com.namjackson.archstudy.data.source
 import com.namjackson.archstudy.data.model.Ticker
 import com.namjackson.archstudy.data.source.local.TickerLocalDataSource
 import com.namjackson.archstudy.data.source.remote.TickerRemoteDataSource
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class TickerRepository private constructor(
     val tickerLocalDataSource: TickerLocalDataSource,
@@ -15,19 +17,23 @@ class TickerRepository private constructor(
 
     suspend fun getMarketAll(
         baseCurrency: String
-    ): Result<String> {
-        return withContext(ioDispatcher) {
-            return@withContext tickerRemoteDataSource.getMarketAll(baseCurrency)
+    ): Flow<Result<String>> = withContext(ioDispatcher) {
+        flow {
+            emit(Result.Loading)
+            emit(tickerRemoteDataSource.getMarketAll(baseCurrency))
         }
     }
 
-    suspend fun getTickers(
+    fun getTickers(
         markets: String
-    ): Result<List<Ticker>> {
-        return withContext(ioDispatcher) {
-            return@withContext tickerRemoteDataSource.getTickers(markets)
+    ): ReceiveChannel<Result<List<Ticker>>> = CoroutineScope(ioDispatcher).produce {
+        send(Result.Loading)
+        while (isActive) {
+            send(tickerRemoteDataSource.getTickers(markets))
+            delay(10_000L)
         }
     }
+
 
     companion object {
         private lateinit var instance: TickerRepository
@@ -41,6 +47,5 @@ class TickerRepository private constructor(
             return instance
         }
     }
-
-
 }
+

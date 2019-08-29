@@ -13,38 +13,29 @@ class TickerRemoteDataSourceImpl(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 
     override suspend fun getMarketAll(baseCurrency: String): Result<String> = withContext(ioDispatcher) {
-        try {
-            val response = upbitApi.getMarketAll()
-            if (response.isEmpty()) {
-                return@withContext Result.Error(Exception("NoData"))
-            }
-
-            return@withContext Result.Success(
-                response.filter {
-                    it.market.startsWith(baseCurrency)
-                }.joinToString { it.market }
-            )
-
-        } catch (e: Exception) {
-            return@withContext Result.Error(e)
+        val response = upbitApi.getMarketAll()
+        if (response.isEmpty()) {
+            return@withContext Result.Error(Exception("NoData"))
         }
+        return@withContext Result.Success(
+            response.filter {
+                it.market.startsWith(baseCurrency)
+            }.joinToString { it.market }
+        )
     }
 
 
     override suspend fun getTickers(markets: String): Result<List<Ticker>> = withContext(ioDispatcher) {
-        try {
-            val response = upbitApi.getTickers(markets)
-            with(response) {
-                if (isEmpty()) {
-                    return@withContext Result.Error(Exception("NoData"))
-                }
-                return@withContext Result.Success(
-                    sortedByDescending { it.accTradePrice24h }.map { Ticker.from(it) }
-                )
+        val response = upbitApi.getTickers(markets)
+        with(response) {
+            if (isEmpty()) {
+                return@withContext Result.Error(Exception("NoData"))
             }
-        } catch (e: Exception) {
-            return@withContext Result.Error(e)
+            return@withContext Result.Success(
+                sortedByDescending { it.accTradePrice24h }.map { Ticker.from(it) }
+            )
         }
+
     }
 
     companion object {

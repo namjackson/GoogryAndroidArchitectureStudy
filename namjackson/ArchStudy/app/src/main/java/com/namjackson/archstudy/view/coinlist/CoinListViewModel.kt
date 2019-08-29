@@ -1,12 +1,14 @@
 package com.namjackson.archstudy.view.coinlist
 
-import android.util.Log
 import androidx.lifecycle.*
 import com.namjackson.archstudy.base.BaseViewModel
 import com.namjackson.archstudy.data.model.Ticker
 import com.namjackson.archstudy.data.source.Result
 import com.namjackson.archstudy.data.source.TickerRepository
-import com.namjackson.archstudy.util.Event
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 
 
@@ -44,43 +46,41 @@ class CoinListViewModel(
         })
     }
 
-
-    fun loadCoinList() {
-        if (!this::markets.isInitialized) {
-            initMarket()
-        } else {
-            getTickers(markets)
-        }
-    }
-
-    fun initMarket() {
-        _isLoading.postValue(true)
-
+    private fun initMarket() {
         viewModelScope.launch {
             val resultMarket = tickerRepository.getMarketAll(baseCurrency.value ?: "")
-            if (resultMarket is Result.Success) {
-                markets = resultMarket.data
-                getTickers(markets)
-            } else {
-                _showToastEvent.value = Event(resultMarket.toString())
-                _isLoading.value = false
+            resultMarket.catch { e ->
+                showError(e.toString())
+            }.collect {
+                resultLoad(it) {
+                    markets = it
+                    getTickers(markets)
+                }
             }
         }
 
     }
 
-    fun getTickers(markets: String) {
+    private lateinit var channel: ReceiveChannel<Result<List<Ticker>>>
+
+    private fun getTickers(markets: String) {
+        if (this::channel.isInitialized) {
+            channel.cancel()
+        }
         viewModelScope.launch {
-            val resultList = tickerRepository.getTickers(markets)
-            if (resultList is Result.Success) {
-                coinList.value = resultList.data
-            } else {
-                _showToastEvent.value = Event(resultList.toString())
-            }
-            _isLoading.value = false
+            channel = tickerRepository.getTickers(markets)
+            channel.consumeAsFlow()
+                .catch { e -> showError(e.toString()) }
+                .collect {
+                    resultLoad(it) {
+                        _isLoading.value = false
+                        coinList.value = it
+                    }
+                }
         }
 
     }
+
 
     fun changeSearch(searchStr: CharSequence) {
         _searchStr.value = searchStr.toString()
@@ -88,4 +88,11 @@ class CoinListViewModel(
 
     private fun filteringCoinList(): List<Ticker>? =
         coinList.value?.filter { it.name.contains(searchStr.value?.toUpperCase().toString()) }
+
+    override fun onCleared() {
+        super.onCleared()
+        if (this::channel.isInitialized) {
+            channel.cancel()
+        }
+    }
 }

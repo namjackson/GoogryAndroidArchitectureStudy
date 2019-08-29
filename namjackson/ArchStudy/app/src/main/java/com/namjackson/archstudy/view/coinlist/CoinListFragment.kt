@@ -37,18 +37,18 @@ class CoinListFragment
     }
 
 
-    override fun onResume() {
-        super.onResume()
-        timer = Timer()
-        timer.schedule(object : TimerTask() {
-            override fun run() {
-                viewModel.loadCoinList()
-            }
-        }, (10 * SECOND), (10 * SECOND))
-    }
+//    override fun onResume() {
+//        super.onResume()
+//        timer = Timer()
+//        timer.schedule(object : TimerTask() {
+//            override fun run() {
+//                viewModel.loadCoinList()
+//            }
+//        }, (10 * SECOND), (10 * SECOND))
+//    }
 
     override fun onPause() {
-        timer.cancel()
+//        timer.cancel()
         super.onPause()
     }
 
